@@ -1,1 +1,1861 @@
-CONTENT_TOO_LARGE_FOR_THIS_CALL_USE_LOCAL_PUSH
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sentence Anatomy Lab | DSE English</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+    body { font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif; }
+    /* Critical fallback so tabs work even if Tailwind CDN fails to load */
+    .hidden { display: none !important; }
+    .tab-panel.hidden { display: none !important; }
+    .clause-main { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 6px solid #2563eb; }
+    .clause-relative { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border-left: 6px solid #059669; }
+    .clause-participle { background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%); border-left: 6px solid #ea580c; }
+    .clause-adverbial { background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); border-left: 6px solid #7c3aed; }
+    .clause-noun { background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%); border-left: 6px solid #db2777; }
+    .clause-passive { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 6px solid #d97706; }
+    .highlight-main { background-color: #93c5fd; padding: 1px 3px; border-radius: 3px; }
+    .highlight-rel { background-color: #6ee7b7; padding: 1px 3px; border-radius: 3px; }
+    .highlight-part { background-color: #fdba74; padding: 1px 3px; border-radius: 3px; }
+    .highlight-adv { background-color: #c4b5fd; padding: 1px 3px; border-radius: 3px; }
+    .highlight-noun { background-color: #f9a8d4; padding: 1px 3px; border-radius: 3px; }
+    .highlight-pass { background-color: #fcd34d; padding: 1px 3px; border-radius: 3px; }
+    .tree-node { transition: all 0.2s ease; }
+    .tree-node:hover { transform: translateX(4px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .tab-active { border-bottom: 3px solid #2563eb; color: #1e40af; font-weight: 600; }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; }
+    .accordion-content.open { max-height: 2000px; }
+    .sample-card:hover { border-color: #2563eb; box-shadow: 0 8px 25px -5px rgba(37,99,235,0.15); }
+    .legend-dot { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+    #dissected-sentence span { cursor: help; transition: opacity 0.15s; }
+    #dissected-sentence span:hover { opacity: 0.85; }
+    .writing-step { counter-increment: step; }
+    .writing-step::before { content: counter(step); }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg">
+          <i class="fa-solid fa-dna"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Sentence Anatomy Lab</h1>
+          <p class="text-xs text-slate-500">DSE English · Lower-ability focused · Clause chunking</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm text-slate-600">
+        <div class="hidden sm:flex items-center gap-2">
+          <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">Relative</span>
+          <span class="px-2 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-medium">Participle</span>
+          <span class="px-2 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">Embedded</span>
+        </div>
+        <button onclick="openSettings()" class="ml-2 p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition" title="API settings">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav Tabs -->
+  <nav class="bg-white border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto">
+      <button onclick="showTab('dissector')" id="tab-dissector" class="tab-btn px-5 py-3.5 text-sm tab-active whitespace-nowrap">
+        <i class="fa-solid fa-scissors mr-1.5"></i> Dissector
+      </button>
+      <button onclick="showTab('learn')" id="tab-learn" class="tab-btn px-5 py-3.5 text-sm text-slate-600 hover:text-blue-700 whitespace-nowrap">
+        <i class="fa-solid fa-book-open mr-1.5"></i> Learn Structures
+      </button>
+      <button onclick="showTab('writing')" id="tab-writing" class="tab-btn px-5 py-3.5 text-sm text-slate-600 hover:text-blue-700 whitespace-nowrap">
+        <i class="fa-solid fa-pen-nib mr-1.5"></i> Writing Transfer
+      </button>
+      <button onclick="showTab('samples')" id="tab-samples" class="tab-btn px-5 py-3.5 text-sm text-slate-600 hover:text-blue-700 whitespace-nowrap">
+        <i class="fa-solid fa-flask mr-1.5"></i> Sample Bank
+      </button>
+      <button onclick="showTab('saved')" id="tab-saved" class="tab-btn px-5 py-3.5 text-sm text-slate-600 hover:text-blue-700 whitespace-nowrap">
+        <i class="fa-solid fa-bookmark mr-1.5"></i> My Sentences
+        <span id="saved-count-badge" class="ml-1.5 hidden px-1.5 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-full">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-4 py-6">
+
+    <!-- ========== DISSECTOR TAB ========== -->
+    <section id="panel-dissector" class="tab-panel" style="display:block">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
+        <div class="flex items-start gap-3 mb-4">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i class="fa-solid fa-paste"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-slate-900">Paste a complex sentence</h2>
+            <p class="text-sm text-slate-600 mt-1">Copy a sentence from DSE Paper 1 Part A or B2 reading passage. The lab will attempt to break it into meaning chunks (main clause + relative / participle / adverbial / noun clauses).</p>
+          </div>
+        </div>
+
+        <textarea id="sentence-input" rows="4" 
+          class="w-full border border-slate-300 rounded-xl px-4 py-3 text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-y"
+          placeholder="e.g. The scientist who discovered the new material, working late into the night, was awarded a prize that changed her career."></textarea>
+
+        <div class="flex flex-wrap gap-3 mt-4">
+          <button id="dissect-btn" onclick="dissectSentence()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-xl flex items-center gap-2 transition">
+            <i class="fa-solid fa-microscope"></i> <span id="dissect-btn-text">Dissect Sentence</span>
+          </button>
+          <button onclick="loadExample()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-5 py-2.5 rounded-xl flex items-center gap-2 transition">
+            <i class="fa-solid fa-lightbulb"></i> Try a sample
+          </button>
+          <button onclick="clearAll()" class="text-slate-500 hover:text-slate-700 px-3 py-2.5 text-sm">Clear</button>
+        </div>
+      </div>
+
+      <!-- Results area -->
+      <div id="results" class="hidden space-y-6">
+        <!-- Colour-coded sentence -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">Colour-coded sentence</h3>
+          <div id="dissected-sentence" class="text-lg leading-relaxed font-medium text-slate-800 p-4 bg-slate-50 rounded-xl border border-slate-100"></div>
+          <div class="flex flex-wrap gap-4 mt-4 text-xs text-slate-600">
+            <span><span class="legend-dot bg-blue-300"></span> Main clause</span>
+            <span><span class="legend-dot bg-emerald-300"></span> Relative clause</span>
+            <span><span class="legend-dot bg-orange-300"></span> Participle / reduced relative</span>
+            <span><span class="legend-dot bg-purple-300"></span> Adverbial clause / phrase</span>
+            <span><span class="legend-dot bg-pink-300"></span> Noun clause</span>
+            <span><span class="legend-dot bg-amber-300"></span> Passive structure</span>
+          </div>
+        </div>
+
+        <!-- Anatomy tree -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Linguistic Anatomy</h3>
+          <div id="anatomy-tree" class="space-y-3"></div>
+        </div>
+
+        <!-- Chunking tip -->
+        <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+          <div class="flex gap-3">
+            <i class="fa-solid fa-lightbulb text-blue-500 mt-0.5"></i>
+            <div>
+              <h4 class="font-semibold text-blue-900">Chunking tip for lower-ability readers</h4>
+              <p id="chunking-tip" class="text-sm text-blue-800 mt-1 leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save to My Sentences -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-bookmark"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold text-slate-900">Save this sentence for later review</h3>
+              <p class="text-sm text-slate-600 mt-0.5">Choose a theme so you can find it easily when you revise. Saved sentences stay on this device/browser.</p>
+            </div>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label class="text-xs font-semibold text-slate-500 block mb-1">Theme</label>
+              <select id="save-theme" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none bg-white">
+                <option value="">— Select a theme —</option>
+                <option value="environment">Environment</option>
+                <option value="technology">Technology</option>
+                <option value="parenting">Parenting</option>
+                <option value="social issues">Social issues</option>
+                <option value="popular culture">Popular culture</option>
+                <option value="education">Education</option>
+                <option value="HK culture and life">HK culture and life</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500 block mb-1">Optional note (why useful?)</label>
+              <input id="save-note" type="text" maxlength="120" placeholder="e.g. Good example of two relative clauses"
+                class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none" />
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="saveCurrentSentence()" id="btn-save" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-5 py-2.5 rounded-xl flex items-center gap-2 transition text-sm">
+              <i class="fa-solid fa-plus"></i> Save to My Sentences
+            </button>
+            <span id="save-feedback" class="text-sm text-emerald-700 hidden"></span>
+          </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <p class="text-xs text-slate-400 text-center">Automatic analysis is approximate and based on common patterns (relative pronouns, -ing/-ed forms, be + past participle). Always verify with your teacher for exam accuracy.</p>
+      </div>
+    </section>
+
+    <!-- ========== LEARN TAB ========== -->
+    <section id="panel-learn" class="tab-panel hidden" style="display:none">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-900">Core Structures for DSE Reading & Writing</h2>
+        <p class="text-slate-600 mt-1">These are the structures that make sentences long and “difficult”. Once you can see them, you can chunk the meaning.</p>
+      </div>
+
+      <!-- Accordion items -->
+      <div class="space-y-3" id="learn-accordions">
+
+        <!-- 1. Relative Clauses -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">1</span>
+              <div>
+                <div class="font-semibold text-slate-900">Relative Clauses (who / which / that / whose / where)</div>
+                <div class="text-xs text-slate-500">Defining vs Non-defining · 關係子句</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="px-5 pb-5 pt-1 space-y-4 border-t border-slate-100">
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="clause-relative rounded-xl p-4">
+                  <div class="text-xs font-semibold text-emerald-800 mb-1">DEFINING (essential information)</div>
+                  <p class="text-sm">The students <strong>who finished early</strong> could leave.</p>
+                  <p class="text-xs text-emerald-700 mt-2">→ Identifies which students. No commas.</p>
+                </div>
+                <div class="clause-relative rounded-xl p-4">
+                  <div class="text-xs font-semibold text-emerald-800 mb-1">NON-DEFINING (extra information)</div>
+                  <p class="text-sm">My brother, <strong>who lives in Canada</strong>, is a doctor.</p>
+                  <p class="text-xs text-emerald-700 mt-2">→ Extra fact. Needs commas. Cannot use “that”.</p>
+                </div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 text-sm">
+                <p class="font-medium text-slate-800 mb-2">Key recognition tips for students:</p>
+                <ul class="list-disc list-inside space-y-1 text-slate-700">
+                  <li>Look for <strong>who / which / that / whose / where / when</strong> right after a noun.</li>
+                  <li>If the clause can be removed and the sentence still makes sense → non-defining (extra).</li>
+                  <li>If removing it changes the meaning or makes the noun unclear → defining (essential).</li>
+                  <li>In DSE reading, long relative clauses often hide the main verb. Find the main subject + main verb first.</li>
+                </ul>
+              </div>
+              <div class="text-xs text-slate-500">Reference: Advanced Grammar in Use Units 53–55 · English Grammar in Use Units 92–96</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Reduced Relative / Participle as adjective -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-orange-100 text-orange-700 flex items-center justify-center text-sm font-bold">2</span>
+              <div>
+                <div class="font-semibold text-slate-900">Reduced Relative Clauses (Participle phrases)</div>
+                <div class="text-xs text-slate-500">-ing / -ed after a noun · 簡化關係子句</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="px-5 pb-5 pt-1 space-y-4 border-t border-slate-100">
+              <p class="text-sm text-slate-700">Writers often drop “who is / which is / that are” and keep only the -ing or -ed form. This is very common in DSE Part B2 and newspaper English.</p>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="clause-participle rounded-xl p-4">
+                  <div class="text-xs font-semibold text-orange-800 mb-1">ACTIVE meaning (-ing)</div>
+                  <p class="text-sm">The people <strong>living next door</strong> come from Italy.</p>
+                  <p class="text-xs text-orange-700 mt-1">= who are living next door</p>
+                </div>
+                <div class="clause-participle rounded-xl p-4">
+                  <div class="text-xs font-semibold text-orange-800 mb-1">PASSIVE meaning (-ed)</div>
+                  <p class="text-sm">The weapon <strong>used in the murder</strong> has been found.</p>
+                  <p class="text-xs text-orange-700 mt-1">= that was used in the murder</p>
+                </div>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-4 text-sm">
+                <p class="font-medium mb-2">How to “expand” them back (useful for understanding):</p>
+                <p class="text-slate-700">See an -ing / -ed phrase after a noun? Mentally insert “who/which + be” and check if it makes sense.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Adverbial Participle Clauses -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-sm font-bold">3</span>
+              <div>
+                <div class="font-semibold text-slate-900">Adverbial Participle Clauses</div>
+                <div class="text-xs text-slate-500">Giving time, reason, result, condition · 分詞副詞子句</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="px-5 pb-5 pt-1 space-y-4 border-t border-slate-100">
+              <p class="text-sm text-slate-700">These usually appear at the beginning or end of a sentence (often with a comma) and answer “When?”, “Why?”, “How?” or “Under what condition?”.</p>
+              <div class="space-y-3">
+                <div class="clause-adverbial rounded-xl p-4">
+                  <p class="text-sm"><strong>Opening her eyes</strong>, the baby began to cry. <span class="text-xs text-purple-600">(= When she opened…)</span></p>
+                </div>
+                <div class="clause-adverbial rounded-xl p-4">
+                  <p class="text-sm"><strong>Faced with a bill for $10,000</strong>, Ivan took an extra job. <span class="text-xs text-purple-600">(= Because he was faced…)</span></p>
+                </div>
+                <div class="clause-adverbial rounded-xl p-4">
+                  <p class="text-sm"><strong>Having finished the book</strong>, I had a holiday. <span class="text-xs text-purple-600">(= After / Because I had finished…)</span></p>
+                </div>
+              </div>
+              <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm">
+                <p class="font-medium text-amber-900">Warning for students (dangling participle):</p>
+                <p class="text-amber-800 mt-1">The implied subject of the participle should be the same as the subject of the main clause. Wrong: <em>Waiting for the bus, a car splashed me.</em> (The car was not waiting!)</p>
+              </div>
+              <div class="text-xs text-slate-500">Reference: Advanced Grammar in Use Units 58–59</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Noun Clauses -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-pink-100 text-pink-700 flex items-center justify-center text-sm font-bold">4</span>
+              <div>
+                <div class="font-semibold text-slate-900">Noun Clauses (that / what / whether / if / wh-)</div>
+                <div class="text-xs text-slate-500">Acting as subject or object · 名詞子句</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="px-5 pb-5 pt-1 space-y-4 border-t border-slate-100">
+              <p class="text-sm text-slate-700">A whole clause acts like a noun. Very common after verbs of thinking, saying, knowing, and as the subject of a sentence.</p>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="clause-noun rounded-xl p-4">
+                  <div class="text-xs font-semibold text-pink-800 mb-1">As Object</div>
+                  <p class="text-sm">Researchers found <strong>that the new drug reduced symptoms</strong>.</p>
+                </div>
+                <div class="clause-noun rounded-xl p-4">
+                  <div class="text-xs font-semibold text-pink-800 mb-1">As Subject</div>
+                  <p class="text-sm"><strong>What the students need</strong> is more practice with long sentences.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Passive Voice in complex sentences -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+          <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-slate-50 transition">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-sm font-bold">5</span>
+              <div>
+                <div class="font-semibold text-slate-900">Passive Voice inside complex sentences</div>
+                <div class="text-xs text-slate-500">be + past participle · 被動語態</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-down text-slate-400 transition-transform"></i>
+          </button>
+          <div class="accordion-content">
+            <div class="px-5 pb-5 pt-1 space-y-4 border-t border-slate-100">
+              <p class="text-sm text-slate-700">In academic and news texts (DSE Part B2), passive is frequent. It often hides the “doer” and focuses on the action or result.</p>
+              <div class="clause-passive rounded-xl p-4">
+                <p class="text-sm">The policy <strong>was introduced</strong> by the government last year after public pressure <strong>had been ignored</strong> for months.</p>
+              </div>
+              <p class="text-sm text-slate-700">When you see “was / were / has been / had been / is being + V-ed”, treat the whole phrase as one meaning unit (the action happened to the subject).</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========== WRITING TRANSFER TAB ========== -->
+    <section id="panel-writing" class="tab-panel hidden" style="display:none">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-900">From Reading to Writing</h2>
+        <p class="text-slate-600 mt-1">Once you can see the structure, you can use the same patterns to upgrade your own writing (especially useful for Level 4+ in Paper 2).</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Simple → Complex builder -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-arrow-up-right-dots text-blue-600"></i> Upgrade a simple sentence
+          </h3>
+          <p class="text-sm text-slate-600 mb-4">Start with a basic idea, then add the structures you just learned.</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="text-xs font-semibold text-slate-500">1. Base sentence (simple)</label>
+              <input id="base-sentence" type="text" value="The government introduced a new policy."
+                class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">2. Add a defining relative clause</label>
+              <input id="add-relative" type="text" placeholder="e.g. that aims to reduce plastic waste"
+                class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-slate-500">3. Add an adverbial participle (reason / time)</label>
+              <input id="add-participle" type="text" placeholder="e.g. Having studied the problem carefully,"
+                class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+            </div>
+            <button onclick="buildComplex()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-sm transition">
+              Show upgraded version
+            </button>
+            <div id="upgraded-result" class="hidden mt-3 p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-sm text-emerald-900 leading-relaxed"></div>
+          </div>
+        </div>
+
+        <!-- Ready-to-use patterns -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-clone text-emerald-600"></i> Ready-to-use patterns for Paper 2
+          </h3>
+          <div class="space-y-3 text-sm">
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <div class="text-xs font-semibold text-slate-500 mb-1">Define a term precisely</div>
+              <p class="text-slate-800">Digital detox, <span class="highlight-rel">which refers to a period of time when a person refrains from using electronic devices</span>, has become popular among young people.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <div class="text-xs font-semibold text-slate-500 mb-1">Give reason with participle</div>
+              <p class="text-slate-800"><span class="highlight-part">Faced with increasing pressure from parents and teachers</span>, many students sacrifice sleep for extra study hours.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <div class="text-xs font-semibold text-slate-500 mb-1">Show sequence / result</div>
+              <p class="text-slate-800"><span class="highlight-part">Having completed the research project</span>, the team presented their findings to the school board.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <div class="text-xs font-semibold text-slate-500 mb-1">Add extra information (non-defining)</div>
+              <p class="text-slate-800">Online learning, <span class="highlight-rel">which became widespread during the pandemic</span>, continues to offer flexibility for many learners.</p>
+            </div>
+            <div class="p-3 bg-slate-50 rounded-xl">
+              <div class="text-xs font-semibold text-slate-500 mb-1">Noun clause as object (reporting ideas)</div>
+              <p class="text-slate-800">Recent studies have shown <span class="highlight-noun">that regular physical activity improves concentration in class</span>.</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-500 mt-4">Tip: In your own writing, aim for 1–2 well-controlled complex structures per paragraph rather than many short simple sentences. Markers notice range and control.</p>
+        </div>
+      </div>
+
+      <!-- Common upgrade table -->
+      <div class="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h3 class="font-bold text-slate-900 mb-4">Quick upgrade table (Level 3 → Level 4+)</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-200 text-left text-slate-500">
+                <th class="py-2 pr-4 font-medium">Basic (Level 3 style)</th>
+                <th class="py-2 font-medium">Upgraded with structure</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr>
+                <td class="py-3 pr-4 text-slate-600">Students feel stressed. They have too much homework.</td>
+                <td class="py-3"><span class="highlight-part">Faced with heavy homework loads</span>, many students feel stressed.</td>
+              </tr>
+              <tr>
+                <td class="py-3 pr-4 text-slate-600">There is a problem. The problem is serious.</td>
+                <td class="py-3">There is a problem <span class="highlight-rel">which is becoming increasingly serious</span>.</td>
+              </tr>
+              <tr>
+                <td class="py-3 pr-4 text-slate-600">I finished my work. Then I went home.</td>
+                <td class="py-3"><span class="highlight-part">Having finished my work</span>, I went home.</td>
+              </tr>
+              <tr>
+                <td class="py-3 pr-4 text-slate-600">The government made a plan. The plan helps the poor.</td>
+                <td class="py-3">The government made a plan <span class="highlight-rel">that aims to help the poor</span>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SAMPLES TAB ========== -->
+    <section id="panel-samples" class="tab-panel hidden" style="display:none">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold text-slate-900">Sample Bank — DSE-style complex sentences</h2>
+        <p class="text-slate-600 mt-1">Click any card to load it into the Dissector and see the full anatomy. These are typical of Part A / B2 reading difficulty.</p>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4" id="sample-grid"></div>
+    </section>
+
+    <!-- ========== MY SENTENCES (SAVED) TAB ========== -->
+    <section id="panel-saved" class="tab-panel hidden" style="display:none">
+      <div class="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-900">My Saved Sentences</h2>
+          <p class="text-slate-600 mt-1">Review the complex sentences you have collected. They are grouped by theme to help you revise for reading and writing.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="exportSaved()" class="text-sm px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600">
+            <i class="fa-solid fa-download mr-1"></i> Export
+          </button>
+          <button onclick="clearAllSaved()" class="text-sm px-3 py-2 rounded-lg border border-red-100 hover:bg-red-50 text-red-600">
+            <i class="fa-solid fa-trash-can mr-1"></i> Clear all
+          </button>
+        </div>
+      </div>
+
+      <!-- Theme filters -->
+      <div class="flex flex-wrap gap-2 mb-6" id="theme-filters">
+        <!-- filled by JS -->
+      </div>
+
+      <!-- Empty state -->
+      <div id="saved-empty" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-10 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-4 text-2xl">
+          <i class="fa-regular fa-bookmark"></i>
+        </div>
+        <h3 class="font-semibold text-slate-800">No sentences saved yet</h3>
+        <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">Dissect a sentence on the Dissector tab, choose a theme, and click “Save to My Sentences”. Your collection will appear here for later review.</p>
+        <button onclick="showTab('dissector')" class="mt-5 text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl">Go to Dissector</button>
+      </div>
+
+      <!-- Saved list -->
+      <div id="saved-list" class="space-y-4"></div>
+    </section>
+
+  </main>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="fixed inset-0 bg-black/40 z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold text-slate-900">Analysis Settings</h3>
+        <button onclick="closeSettings()" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+      <p class="text-sm text-slate-600 mb-4">Paste your OpenAI-compatible API key to enable LLM-powered sentence analysis. The key stays in this browser only (localStorage). Leave blank to use the built-in rule-based analyser.</p>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">API Key</label>
+          <input type="password" id="api-key" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" placeholder="sk-... or OpenRouter key" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Base URL</label>
+          <input type="text" id="api-base" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="https://openrouter.ai/api/v1" />
+          <p class="text-xs text-slate-500 mt-1">Examples: https://openrouter.ai/api/v1 · https://api.openai.com/v1 · https://api.x.ai/v1</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Model</label>
+          <input type="text" id="api-model" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" value="x-ai/grok-4.5" />
+          <p class="text-xs text-slate-500 mt-1">e.g. x-ai/grok-4.5 · gpt-4o-mini · claude-3.5-sonnet</p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button onclick="saveSettings()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl">Save</button>
+        <button onclick="closeSettings()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl">Cancel</button>
+      </div>
+      <p id="settings-status" class="text-xs text-center mt-3 text-emerald-600 hidden">Settings saved. LLM analysis is ready.</p>
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto px-4 py-8 text-center text-xs text-slate-400 border-t border-slate-200 mt-8">
+    Sentence Anatomy Lab · Designed for lower-ability DSE students to build sentence-chunking confidence · Structures based on Cambridge English Grammar in Use series
+  </footer>
+
+  <script>
+/* ===== Sentence Anatomy Lab (inlined for Safari compatibility) ===== */
+/* Sentence Anatomy Lab - Core Logic */
+
+const STORAGE_KEY = 'sentenceAnatomyLab_saved_v1';
+const SETTINGS_KEY = 'sentenceAnatomyLab_settings_v1';
+
+function getSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? JSON.parse(raw) : { apiKey: '', baseUrl: 'https://openrouter.ai/api/v1', model: 'x-ai/grok-4.5' };
+  } catch (e) {
+    return { apiKey: '', baseUrl: 'https://openrouter.ai/api/v1', model: 'x-ai/grok-4.5' };
+  }
+}
+
+function setSettings(s) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+}
+
+function openSettings() {
+  const s = getSettings();
+  document.getElementById('api-key').value = s.apiKey || '';
+  document.getElementById('api-base').value = s.baseUrl || 'https://openrouter.ai/api/v1';
+  document.getElementById('api-model').value = s.model || 'x-ai/grok-4.5';
+  document.getElementById('settings-status').classList.add('hidden');
+  document.getElementById('settings-modal').classList.remove('hidden');
+}
+
+function closeSettings() {
+  document.getElementById('settings-modal').classList.add('hidden');
+}
+
+function saveSettings() {
+  const s = {
+    apiKey: document.getElementById('api-key').value.trim(),
+    baseUrl: document.getElementById('api-base').value.trim() || 'https://openrouter.ai/api/v1',
+    model: document.getElementById('api-model').value.trim() || 'x-ai/grok-4.5'
+  };
+  setSettings(s);
+  document.getElementById('settings-status').classList.remove('hidden');
+  setTimeout(closeSettings, 1200);
+}
+
+async function analyseWithLLM(sentence, settings) {
+  const prompt = `You are a patient DSE English teacher helping lower-ability S4 students chunk complex sentences for Paper 1.
+
+Analyse this sentence exactly as written:
+"${sentence.replace(/"/g, '\\"')}"
+
+Return ONLY valid JSON (no markdown, no explanation) with this exact shape:
+{
+  "markedHtml": "the original sentence with these span classes only: highlight-rel (relative markers who/which/that etc.), highlight-part (participles / reduced relatives / -ing -ed phrases), highlight-pass (passive voice), highlight-noun (noun clauses), highlight-adv (adverbial clauses). Use the original words.",
+  "anatomy": [
+    {
+      "type": "main|relative|participle|adverbial|noun|passive",
+      "label": "short clear label",
+      "color": "clause-main|clause-relative|clause-participle|clause-adverbial|clause-noun|clause-passive",
+      "content": "the relevant chunk or short description",
+      "note": "one simple student-friendly sentence explaining what this part does"
+    }
+  ],
+  "tips": ["one clear chunking tip written for a lower-ability S4 student"]
+}
+
+Rules:
+- Always include the main clause first.
+- Only include types that are actually present.
+- Keep language simple and encouraging.
+- Do not invent grammar that is not in the sentence.
+- markedHtml must contain the full original sentence text.`;
+
+  const body = {
+    model: settings.model,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.2,
+    max_tokens: 1800
+  };
+
+  const res = await fetch(settings.baseUrl.replace(/\/$/, '') + '/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + settings.apiKey
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('API error ' + res.status + ': ' + err.slice(0, 200));
+  }
+
+  const data = await res.json();
+  let content = data.choices?.[0]?.message?.content || '';
+  content = content.trim();
+  if (content.startsWith('```')) {
+    content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+  }
+  const parsed = JSON.parse(content);
+  if (!parsed.markedHtml || !parsed.anatomy) throw new Error('Invalid response shape');
+  parsed.original = sentence;
+  parsed.tips = parsed.tips || ['Find the main subject and verb first, then add the other packages one by one.'];
+  return parsed;
+}
+
+const THEMES = [
+  { id: 'environment', label: 'Environment', color: 'bg-emerald-100 text-emerald-800' },
+  { id: 'technology', label: 'Technology', color: 'bg-sky-100 text-sky-800' },
+  { id: 'parenting', label: 'Parenting', color: 'bg-rose-100 text-rose-800' },
+  { id: 'social issues', label: 'Social issues', color: 'bg-violet-100 text-violet-800' },
+  { id: 'popular culture', label: 'Popular culture', color: 'bg-amber-100 text-amber-800' },
+  { id: 'education', label: 'Education', color: 'bg-blue-100 text-blue-800' },
+  { id: 'HK culture and life', label: 'HK culture and life', color: 'bg-orange-100 text-orange-800' }
+];
+
+const SAMPLES = [
+  {
+    id: 1,
+    title: "Technology & attention",
+    level: "Part A style",
+    sentence: "The teenagers who spend more than four hours a day on social media, according to a recent study conducted by the university, are more likely to report feelings of anxiety that affect their school performance.",
+    tags: ["relative", "participle-reduced", "noun-clause"],
+    theme: "technology"
+  },
+  {
+    id: 2,
+    title: "Environment policy",
+    level: "B2 bridge",
+    sentence: "Faced with rising sea levels that threaten coastal communities, the government has introduced a series of measures which are designed to protect low-lying areas and which have already been tested in two pilot cities.",
+    tags: ["adverbial-participle", "relative", "passive"],
+    theme: "environment"
+  },
+  {
+    id: 3,
+    title: "Education reform",
+    level: "Part A",
+    sentence: "Students living in remote villages, many of whom have never had access to high-speed internet, will benefit from the new online learning platform that was launched last month.",
+    tags: ["reduced-relative", "relative", "passive"],
+    theme: "education"
+  },
+  {
+    id: 4,
+    title: "Health & lifestyle",
+    level: "B2",
+    sentence: "Having examined the data carefully, researchers concluded that regular physical activity, which includes both aerobic exercise and strength training, significantly reduces the risk of developing chronic diseases later in life.",
+    tags: ["adverbial-participle", "relative", "noun-clause"],
+    theme: "social issues"
+  },
+  {
+    id: 5,
+    title: "Urban development",
+    level: "Part A",
+    sentence: "The old industrial buildings that once dominated the waterfront have been transformed into cultural centres attracting thousands of visitors every weekend.",
+    tags: ["relative", "reduced-relative", "passive"],
+    theme: "HK culture and life"
+  },
+  {
+    id: 6,
+    title: "Social media impact",
+    level: "B2",
+    sentence: "What many parents fail to realise is that the algorithms used by these platforms are deliberately designed to keep users scrolling for as long as possible.",
+    tags: ["noun-clause", "reduced-relative", "passive"],
+    theme: "parenting"
+  },
+  {
+    id: 7,
+    title: "Climate action",
+    level: "B2",
+    sentence: "Although the agreement was signed by nearly 200 countries, the targets that were set have not been met by the majority of signatories, leaving scientists increasingly concerned about the future.",
+    tags: ["adverbial", "relative", "passive", "participle"],
+    theme: "environment"
+  },
+  {
+    id: 8,
+    title: "Youth employment",
+    level: "Part A",
+    sentence: "Young people entering the job market today face challenges that previous generations never imagined, including the need to retrain multiple times during their careers.",
+    tags: ["reduced-relative", "relative"],
+    theme: "social issues"
+  }
+];
+
+// ---------- Storage helpers ----------
+function getSaved() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function setSaved(list) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  updateSavedBadge();
+}
+
+function updateSavedBadge() {
+  const count = getSaved().length;
+  const badge = document.getElementById('saved-count-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+// ---------- Analyser (unchanged core) ----------
+function analyseSentence(raw) {
+  const text = raw.trim().replace(/\s+/g, ' ');
+  if (!text) return null;
+
+  const result = {
+    original: text,
+    highlights: [],
+    anatomy: [],
+    tips: []
+  };
+
+  const passiveRegex = /\b(is|are|was|were|been|being|be)\s+(\w+ed|known|shown|given|taken|made|found|used|designed|introduced|conducted|launched|transformed|signed|set|met)\b/gi;
+  let match;
+  const passives = [];
+  while ((match = passiveRegex.exec(text)) !== null) {
+    passives.push({ start: match.index, end: match.index + match[0].length, text: match[0] });
+  }
+
+  const relMarkers = /\b(who|whom|whose|which|that|where|when)\b/gi;
+  const relatives = [];
+  while ((match = relMarkers.exec(text)) !== null) {
+    relatives.push({ start: match.index, end: match.index + match[0].length, word: match[0] });
+  }
+
+  const partRegex = /(^|,\s*)([A-Z][a-z]+ing|[A-Z][a-z]+ed|Having\s+\w+ed|Faced\s+with|According\s+to|Including|Leaving)\b/g;
+  const participles = [];
+  while ((match = partRegex.exec(text)) !== null) {
+    participles.push({ start: match.index + (match[1] ? match[1].length : 0), text: match[2] });
+  }
+
+  const anatomy = [];
+  anatomy.push({
+    type: 'main',
+    label: 'Main Clause (core meaning)',
+    color: 'clause-main',
+    content: extractMainish(text),
+    note: 'Find the main subject + main finite verb first. Everything else modifies this core.'
+  });
+
+  // Build fuller relative clause snippets for the anatomy panel
+  var relSnippets = [];
+  var relSpanRe = /\b((?:who|whom|whose|which|that|where|when)\b[^,.;]{2,55})/gi;
+  var rm;
+  while ((rm = relSpanRe.exec(text)) !== null) {
+    relSnippets.push(rm[1].trim());
+  }
+  if (relSnippets.length > 0 || relatives.length > 0) {
+    anatomy.push({
+      type: 'relative',
+      label: 'Relative clause(s) — ' + (relSnippets.length || relatives.length) + ' found',
+      color: 'clause-relative',
+      content: relSnippets.length ? relSnippets.map(function (x) { return '“' + x + '”'; }).join(' · ') : relatives.map(function (r) { return r.word; }).join(', '),
+      note: 'Relative clauses give extra information about a noun. Ask: “Which one?” or “What kind of…?” Temporarily ignore them to find the main subject + verb.'
+    });
+  }
+
+  if (participles.length > 0 || /\b\w+ing\b|\b\w+ed\b/.test(text)) {
+    anatomy.push({
+      type: 'participle',
+      label: 'Participle / reduced relative phrases',
+      color: 'clause-participle',
+      content: 'Look for -ing or -ed forms that describe a noun or give time/reason',
+      note: 'Try expanding: “who is/are + -ing” or “which was/were + -ed”. If it works, it is a reduced relative.'
+    });
+  }
+
+  if (passives.length > 0) {
+    anatomy.push({
+      type: 'passive',
+      label: `Passive voice — ${passives.length} instance(s)`,
+      color: 'clause-passive',
+      content: passives.map(p => p.text).join(' · '),
+      note: 'Passive focuses on the action or the receiver. The “doer” may be missing or come after “by”.'
+    });
+  }
+
+  if (/\b(that|what|whether|if|how|why)\b/i.test(text) && / (said|found|showed|concluded|realised|believe|think|know|suggest) /i.test(text)) {
+    anatomy.push({
+      type: 'noun',
+      label: 'Possible noun clause (that / what / whether…)',
+      color: 'clause-noun',
+      content: 'Clause acting as object of a reporting or mental verb',
+      note: 'The whole “that …” or “what …” chunk functions like a noun (the content of the finding / thought).'
+    });
+  }
+
+
+  // Adverbial packages for anatomy panel (same inventory as colour rules)
+  var advSnippets = [];
+  var am;
+  var advScan = /\b((?:even though|even if|although|though|because|unless|whereas|whenever|wherever|as soon as|by the time|provided that|as long as|in case|given that|in order that|so that|as if|as though|while|when|before|after|until|once|since|where|if|without|by|despite|during|throughout|owing to|due to|because of|given|in spite of|in order to|so as to)\s+[^,.;]{3,70})/gi;
+  while ((am = advScan.exec(text)) !== null) {
+    advSnippets.push(am[1].trim());
+  }
+  var pathScan = /\b((?:from|via|through)\s+[^,.;]{3,50}|(?:and\s+)?on\s+to\s+[^,.;]{3,50})/gi;
+  while ((am = pathScan.exec(text)) !== null) {
+    advSnippets.push(am[1].trim());
+  }
+  if (advSnippets.length > 0) {
+    anatomy.push({
+      type: 'adverbial',
+      label: 'Adverbial clause / phrase — ' + advSnippets.length + ' found',
+      color: 'clause-adverbial',
+      content: advSnippets.map(function (x) { return '“' + x + '”'; }).join(' · '),
+      note: 'Adverbials answer WHEN, WHY, HOW, WHERE, UNDER WHAT CONDITION, or FOR WHAT PURPOSE. Remove them temporarily to see the main clause more clearly.'
+    });
+  }
+
+    let tip = 'First locate the main subject and the main verb. Then treat every relative clause or participle phrase as a “modifier package” that you can temporarily ignore. Read the core, then add the packages one by one.';
+  if (relatives.length >= 2) {
+    tip = 'This sentence has more than one relative clause. Read up to the first relative marker, understand the main idea, then add each “who/which/that” package separately. Do not try to hold the whole sentence in your head at once.';
+  }
+  if (participles.length > 0) {
+    tip += ' Opening or mid-sentence -ing/-ed phrases often tell you WHEN or WHY something happened — treat them as time/reason adverbs.';
+  }
+
+  result.anatomy = anatomy;
+  result.tips = [tip];
+  result.markedHtml = createMarkedHtml(text, relatives, passives, participles);
+  return result;
+}
+
+function extractMainish(text) {
+  // ============================================================
+  // STANDARDISED MAIN-CLAUSE EXTRACTION (one rule set for all input)
+  // Keep: core subject + main finite verb (+ short object if needed)
+  // Drop: parentheticals, relative clauses, noun-clause complements,
+  //        participle packages, path lists (from/via/through/on to)
+  // Never cut mid-word; never swallow the main verb into a relative.
+  // ============================================================
+  var original = String(text || "").replace(/\s+/g, " ").trim();
+  if (!original) return "";
+
+  var REPORT = "said|told|taught|found|showed|shown|concluded|realised|realized|believe|believed|think|thought|know|known|suggest|suggested|question|wonder|explain|argue|claim|claimed|report|reported|note|noted|ask|asked|decide|decided|hope|hoped|feel|felt|mean|meant|learn|learned|learnt|warn|warned|promise|promised|announce|announced|discover|discovered|admit|admitted|deny|denied|emphasise|emphasize";
+
+  function stripRelatives(chunk) {
+    // Relative package runs from who/which/that… up to (but not including)
+    // the next main-clause finite verb. Falls back to max 8 words.
+    var MAIN_V = "is|are|was|were|am|be|been|being|have|has|had|do|does|did|will|would|shall|should|can|could|may|might|must|make|makes|made|take|takes|took|give|gives|gave|given|get|gets|got|become|becomes|became|seem|seems|seemed|appear|appears|appeared|remain|remains|remained|start|starts|started|begin|begins|began|continue|continues|continued|follow|follows|followed|show|shows|showed|shown|reflect|reflects|lead|leads|point|points|come|comes|came|teach|teaches|taught|tell|tells|told|say|says|said|find|finds|found|know|knows|known|think|thinks|thought|need|needs|needed|want|wants|wanted|try|tries|tried|use|uses|used|include|includes|included|introduce|introduces|introduced|design|designs|designed|report|reports|reported|affect|affects|affected|prefer|prefers|preferred|support|supports|supported|pervade|pervades|pervaded";
+    var re = new RegExp(
+      "\\b(?:who|whom|whose|which|where|that)\\b(?:(?!\\s+(?:" + MAIN_V + ")\\b).){1,80}?(?=\\s+(?:" + MAIN_V + ")\\b|$|[.;])",
+      "gi"
+    );
+    var out = chunk.replace(re, "");
+    // fallback: if still contains relative markers, cut marker + 8 words
+    out = out.replace(/\b(?:who|whom|whose|which|where|that)\b(?:\s+\S+){1,8}/gi, "");
+    return out;
+  }
+  function tidy(chunk) {
+    var s = chunk;
+    s = s.replace(/\b(?:that|which|who|whom|whose)\b/gi, "");
+    s = s.replace(/\s+/g, " ");
+    s = s.replace(/\s+([,.;:?!])/g, "$1");
+    s = s.replace(/([,;])\s*([,;])/g, "$1");
+    s = s.replace(/^[,;\s]+|[,;\s]+$/g, "");
+    s = s.replace(/\b(?:and|or|but)\s*([,;]|$)/gi, "$1");
+    s = s.replace(/\s+/g, " ").trim();
+    s = s.replace(/[,;]\s*$/g, "").trim();
+    s = s.replace(/\s+,/g, ",").trim();
+    s = s.replace(/["“”]{2,}/g, "").replace(/\s+/g, " ").trim();
+    return s;
+  }
+
+  var s = original;
+
+  // ---- 1. Paired dash parentheticals: left + right, strip relatives on left only ----
+  var dashParts = s.split(/(\s+[\-\u2013\u2014]\s+)/);
+  if (dashParts.length >= 5) {
+    var left = stripRelatives(dashParts[0]).trim();
+    var right = dashParts.slice(4).join("").trim();
+    // also strip relatives on right
+    right = stripRelatives(right).trim();
+    s = (left + " " + right).replace(/\s+/g, " ").trim();
+  }
+
+  // ---- 2. Opening participle / adverbial phrase up to first comma ----
+  //     "Faced with …," / "Having examined …," / "Looking at …,"
+  s = s.replace(/^(?:Having|Faced|According|Including|Leaving|Working|Living|Looking|Using|Based|Built|Designed|Conducted|Sitting|Standing|Seeking|Starting|Trying|Hoping|Wanting|Feeling|Knowing|Realising|Realizing)\b[^,]{0,100},\s*/i, "");
+  // Opening adverbial clause: "Although …," / "Because …," / "When …," etc.
+  s = s.replace(/^(?:Even though|Even if|Although|Though|Because|Since|Unless|Whereas|Whenever|Wherever|While|When|Before|After|Until|Once|If)\b[^,]{0,100},\s*/i, "");
+
+  // ---- 3. Noun-clause complements after reporting verbs (keep the verb) ----
+  var nounComp = new RegExp(
+    "\\b((?:" + REPORT + ")(?:\\s+(?!(?:that|whether|if|while|who|which)\\b)\\S+){0,5})\\s+(?:that|whether|if)\\b[^,.;]{0,140}",
+    "gi"
+  );
+  s = s.replace(nounComp, "$1");
+  s = s.replace(/[;,]\s*(?:and\s+)?that\b[^,.;]{0,140}/gi, "");
+
+  // ---- 4. Remaining relatives (short) ----
+  s = stripRelatives(s);
+
+  // ---- 5. Mid-sentence adverbial clauses (because/since/although/when…)
+  s = s.replace(/\b(?:even though|even if|although|though|because|since|unless|whereas|whenever|while|when|before|after|until|once)\b(?:\s+\S+){1,8}/gi, "");
+  // without / by + V-ing
+  s = s.replace(/\b(?:without|by|after|before|while|thus)\s+[a-z]+ing\b(?:\s+\S+){0,7}/gi, "");
+  // agent by + NP (short)
+  s = s.replace(/\bby\s+(?:the\s+|a\s+|an\s+|vast\s+|large\s+)?[a-z]+(?:\s+[a-z]+){0,5}/gi, "");
+
+  // ---- 5b. Wh-clause objects ----
+  s = s.replace(/\b(?:how|what|whether|why)\b(?:\s+\S+){1,5}/gi, "");
+
+  // ---- 6. Mid-sentence participle packages ----
+  s = s.replace(/\b(?:while|by|after|before|without|thus|thereby)\s+[a-z]+ing\b(?:\s+\S+){0,6}/gi, "");
+  s = s.replace(/,\s*[a-z]+ing\b(?:\s+\S+){0,6}/g, "");
+
+  // ---- 7. Path lists: if head already has a finite verb, cut at first from/via/through ----
+  var pathAt = s.search(/\s+\b(?:from|via|through)\s+/i);
+  if (pathAt > 12) {
+    var head = s.slice(0, pathAt).trim();
+    if (/\b(?:is|are|was|were|be|been|being|follows|follow|shows|show|reflects|reveals|marks|represents|leads|points|comes|came|makes|make|takes|take|gives|give|becomes|became|seems|appears|remains|starts|started|begins|began|continues|has|have|had|does|do|did|can|could|will|would|should|must|may|might|taught|told|said|found|given|seen|known)\b/i.test(head)) {
+      s = head;
+    } else {
+      s = s.replace(/\b(?:from|via|through|into|toward|towards)\s+(?:the\s+)?[^,.;]{0,80}/gi, "");
+      s = s.replace(/\b(?:and\s+)?on\s+to\s+[^,.;]{0,80}/gi, "");
+    }
+  }
+
+  // ---- 8. Trailing "all as part of …" / "as part of …" elaborations ----
+  s = s.replace(/,?\s*all\s+as\s+part\s+of\b[\s\S]*$/i, "");
+  s = s.replace(/,?\s*as\s+part\s+of\b[\s\S]*$/i, "");
+
+  s = tidy(s);
+  s = s.replace(/[.\s]+$/g, "").trim();
+
+  // Drop trailing comma-apposition with no finite verb
+  // e.g. "… British schools, special exercise programme called Brain Gym"
+  s = s.replace(/,\s+[^,.;]+$/g, function(tail) {
+    if (/\b(?:is|are|was|were|have|has|had|do|does|did|will|would|can|could|should|must|make|makes|made|teach|taught|follow|follows|show|shows|has|have)\b/i.test(tail)) return tail;
+    return "";
+  });
+  s = s.replace(/[.\s]+$/g, "").trim();
+
+  // ---- 9. Safety nets ----
+  var words = s.split(/\s+/).filter(Boolean);
+  if (words.length < 2) {
+    var origWords = original.split(/\s+/);
+    return origWords.slice(0, 12).join(" ") + (origWords.length > 12 ? " …" : "");
+  }
+  if (words.length > 16) {
+    return words.slice(0, 14).join(" ") + " …";
+  }
+  return s;
+}
+
+function createMarkedHtml(text, relatives, passives, participles) {
+  // ============================================================
+  // STANDARDISED COLOUR RULES (apply to every sentence the same way)
+  // 1. Only whole words / whole packages — never cut mid-word
+  // 2. "that" after teaching/reporting verbs → NOUN clause (not relative)
+  // 3. "that/who/which" after a noun → RELATIVE clause
+  // 4. be + (being) + past participle → PASSIVE
+  // 5. while/by/after + V-ing, opening V-ing/Having/Faced → PARTICIPLE
+  // 6. although/because/if/unless/since + clause → ADVERBIAL
+  // 7. On overlap, higher priority wins on that span only
+  // ============================================================
+  const ranges = [];
+  function add(start, end, cls, title) {
+    if (start < 0 || end <= start || end > text.length) return;
+    // snap start forward over spaces
+    while (start < end && /\s/.test(text[start])) start++;
+    // snap end backward over spaces
+    while (end > start && /\s/.test(text[end - 1])) end--;
+    // if start is mid-word, push forward to next word boundary
+    if (start > 0 && /[A-Za-z0-9]/.test(text[start]) && /[A-Za-z0-9]/.test(text[start - 1])) {
+      while (start < end && /[A-Za-z0-9]/.test(text[start])) start++;
+      while (start < end && /\s/.test(text[start])) start++;
+    }
+    // if end is mid-word, pull back to previous word boundary (do NOT reject)
+    if (end < text.length && end > start && /[A-Za-z0-9]/.test(text[end - 1]) && /[A-Za-z0-9]/.test(text[end])) {
+      while (end > start && /[A-Za-z0-9]/.test(text[end - 1])) end--;
+    }
+    while (end > start && /\s/.test(text[end - 1])) end--;
+    if (end - start < 2) return;
+    ranges.push({ start: start, end: end, cls: cls, title: title });
+  }
+  function endAtBoundary(from, proposedEnd) {
+    var end = Math.min(proposedEnd, text.length);
+    // do not cross spaced dash parenthetical boundary
+    var slice = text.slice(from, end);
+    var d = slice.search(/\s[\-\u2013\u2014]\s/);
+    if (d > 0) end = from + d;
+    // snap back to last word char
+    while (end > from && /\s/.test(text[end - 1])) end--;
+    return end;
+  }
+
+  var m;
+
+
+  // ----- REPORTING / TEACHING verbs (that-clause = NOUN, not relative) -----
+  // Allow up to 8 words between the verb and "that" (e.g. taught in schools that…)
+  var REPORT = "said|told|taught|found|showed|shown|concluded|realised|realized|believe|believed|think|thought|know|known|suggest|suggested|question|wonder|explain|argue|claim|claimed|report|reported|note|noted|ask|asked|decide|decided|hope|hoped|feel|felt|mean|meant|learn|learned|learnt|warn|warned|promise|promised|announce|announced|discover|discovered|emphasise|emphasize|admit|admitted|deny|denied|write|wrote|written|hear|heard|see|saw|seen";
+
+  // 1. NOUN clauses — standardised rules:
+  // (A) reporting verb + (up to 8 non-that words) + that/whether/if + package
+  // (B) "; that" / ", and that" when a reporting verb appears earlier
+  // (C) how/what/whether/why + short package
+  // Highlight always starts at that/whether/if/how (never mid-word).
+  var nounThatRe = new RegExp(
+    "\\b(?:" + REPORT + ")(?:\\s+(?!(?:that|whether|if|while|who|which)\\b)\\S+){0,5}\\s+((?:that|whether|if)\\b[^,.;]{0,120})",
+    "gi"
+  );
+  while ((m = nounThatRe.exec(text)) !== null) {
+    var nStart = m.index + m[0].lastIndexOf(m[1]);
+    var nEnd = endAtBoundary(nStart, nStart + m[1].length);
+    var nSlice = text.slice(nStart, nEnd);
+    var sib = nSlice.search(/[;,]\s*(?:and\s+)?(?:that|whether|if)\b/i);
+    if (sib > 0) nEnd = nStart + sib;
+    var stop2 = text.slice(nStart, nEnd).search(/\s(?:while|who|which)\b/i);
+    if (stop2 > 0) nEnd = nStart + stop2;
+    add(nStart, nEnd, "highlight-noun", "Noun clause (content of thought / speech / teaching)");
+  }
+  // (B) coordinated content clauses after reporting verb
+  var nounCoordRe = /(?:[;,]\s*(?:and\s+)?)(that\b[^,.;]{3,120})/gi;
+  while ((m = nounCoordRe.exec(text)) !== null) {
+    if (!new RegExp("\\b(?:" + REPORT + ")\\b", "i").test(text.slice(0, m.index))) continue;
+    var cStart = m.index + m[0].indexOf(m[1]);
+    var cEnd = endAtBoundary(cStart, cStart + m[1].length);
+    var cSlice = text.slice(cStart, cEnd);
+    var cSib = cSlice.search(/[;,]\s*(?:and\s+)?that\b/i);
+    if (cSib > 0) cEnd = cStart + cSib;
+    add(cStart, cEnd, "highlight-noun", "Noun clause (coordinated content clause)");
+  }
+  // (C) wh-clause
+  var nounWhRe = /\b((?:how|what|whether|why)\s+(?:\S+\s+){0,5}\S+)/gi;
+  while ((m = nounWhRe.exec(text)) !== null) {
+    var wEnd = endAtBoundary(m.index, m.index + m[1].length);
+    var wSlice = text.slice(m.index, wEnd);
+    // Stop before while/who/which/that, comma, semicolon, OR colon (purpose often follows ":")
+    var wStop = wSlice.search(/\s(?:while|who|which|that)\b|[;,:]/i);
+    if (wStop > 0) wEnd = m.index + wStop;
+    // Stop before purpose infinitive " to + verb"
+    var toStop = text.slice(m.index, wEnd).search(/\s+to\s+[a-z]+\b/i);
+    if (toStop > 0) wEnd = m.index + toStop;
+    add(m.index, wEnd, "highlight-noun", "Noun / wh-clause");
+  }
+
+  // 2. RELATIVE clauses — ALL relative pronouns
+  //    who / whom / whose / which / that / where / when / whereby
+  //    Rule: marker + up to 12 words; stop at . ; : or comma (if not right after marker)
+  var relRe = /\b((?:who|whom|whose|which|where|when|whereby)\b(?:\s+\S+){1,10})/gi;
+  while ((m = relRe.exec(text)) !== null) {
+    var rEnd = endAtBoundary(m.index, m.index + m[1].length);
+    var rSlice = text.slice(m.index, rEnd);
+    // Stop at colon / semicolon / period inside the span
+    var stopPunct = rSlice.search(/[.:;]/);
+    if (stopPunct > 4) rEnd = m.index + stopPunct;
+    // Stop at comma only if not the one immediately after a short marker phrase
+    var commaAt = rSlice.indexOf(",");
+    if (commaAt > 8) rEnd = Math.min(rEnd, m.index + commaAt);
+    add(m.index, rEnd, "highlight-rel", "Relative clause — extra information about a noun");
+  }
+  var thatRelRe = /\b(that\b(?:\s+\S+){1,8})/gi;
+  while ((m = thatRelRe.exec(text)) !== null) {
+    var before = text.slice(Math.max(0, m.index - 80), m.index);
+    // skip if a reporting verb stands within the previous 8 words
+    var prevWords = before.trim().split(/\s+/).slice(-5).join(" ");
+    if (new RegExp("\\b(?:" + REPORT + ")\\b", "i").test(prevWords)) continue;
+    // skip coordinated content "; that" / ", and that" when report exists earlier
+    if (/[;,]\s*(?:and\s+)?$/i.test(before) && new RegExp("\\b(?:" + REPORT + ")\\b", "i").test(text.slice(0, m.index))) continue;
+    var tEnd = endAtBoundary(m.index, m.index + m[1].length);
+    add(m.index, tEnd, "highlight-rel", "Relative clause — extra information about a noun");
+  }
+
+  // 3. PASSIVE: be / being + past participle (optional "no longer")
+  var passRe = /\b((?:is|are|was|were|been|being|be)\s+(?:(?:no longer|routinely|often|usually|currently|still|already)\s+)*(?:being\s+)?(?:\w+ed|known|shown|given|taken|made|found|used|seen|taught|designed|introduced|conducted|launched|transformed|signed|set|met|considered|regarded|viewed|told|written|built|done|heard)\b)/gi;
+  while ((m = passRe.exec(text)) !== null) {
+    add(m.index, m.index + m[1].length, 'highlight-pass', 'Passive structure');
+  }
+
+  // 4. PARTICIPLE phrases
+  // opening
+  var partOpen = /^((?:Having|Faced|According|Including|Leaving|Working|Living|Looking|Using|Based|Built|Designed|Conducted|Sitting|Standing|Seeking|Starting|Trying|Hoping|Wanting|Feeling|Knowing|Realising|Realizing)\b[^,]{4,100})/i;
+  m = partOpen.exec(text);
+  if (m) add(0, m[1].length, 'highlight-part', 'Participle phrase (opening)');
+  // while/by/after/before/without + V-ing
+  var midPart = /\b((?:while|by|after|before|without|thus|thereby)\s+[a-z]+ing\b[^,.;]{0,50})/gi;
+  while ((m = midPart.exec(text)) !== null) {
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), 'highlight-part', 'Participle phrase');
+  }
+  // ", V-ing …"
+  var commaPart = /,\s*((?!according)[a-z]+ing\b[^,.;]{3,50})/g;
+  while ((m = commaPart.exec(text)) !== null) {
+    var s3 = m.index + m[0].indexOf(m[1]);
+    add(s3, endAtBoundary(s3, s3 + m[1].length), 'highlight-part', 'Participle / reduced relative');
+  }
+
+  
+  
+  // ============================================================
+  // 5. ADVERBIAL clauses & phrases
+  // Anything that answers WHEN / WHY / HOW / WHERE / UNDER WHAT
+  // CONDITION / FOR WHAT PURPOSE — finite clauses AND phrases.
+  // ============================================================
+
+  // 5a. FINITE adverbial clauses (subordinator + clause)
+  // Time: when, while, as, before, after, until, since, once, whenever, as soon as, by the time
+  // Reason: because, since, as, given that
+  // Condition: if, unless, provided that, as long as, in case
+  // Concession: although, though, even though, even if, whereas, while (contrast)
+  // Place: where, wherever
+  // Manner: as if, as though
+  // Purpose (finite): so that, in order that
+  var advFinite = /\b((?:even though|even if|although|though|because|unless|whereas|whenever|wherever|as soon as|by the time|provided that|as long as|in case|given that|in order that|so that|as if|as though|while|when|before|after|until|once|since|where|if)\s+[a-z][^,.;]{3,80})/gi;
+  while ((m = advFinite.exec(text)) !== null) {
+    // Avoid eating a relative "where/when" that is clearly after a noun — still OK for lower-ability chunking
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Adverbial clause (WHEN / WHY / CONDITION / CONCESSION / PURPOSE)");
+  }
+  // "as" as reason/time only when not "as well" / "as soon" already caught / "as the"
+  var advAs = /\b(as\s+[a-z][^,.;]{4,60})/gi;
+  while ((m = advAs.exec(text)) !== null) {
+    var asSlice = m[1].toLowerCase();
+    if (/^as\s+(?:well|soon|long|far|much|many|if|though|to|a\b|an\b|the\b|part)/.test(asSlice)) continue;
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Adverbial clause (as = when / because)");
+  }
+
+  // 5b. NON-FINITE adverbial phrases: without/by/after/before/while/thus + V-ing
+  var advIng = /\b((?:without|by|after|before|while|thus|thereby|despite)\s+[a-z]+ing\b[^,.;]{0,70})/gi;
+  while ((m = advIng.exec(text)) !== null) {
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Adverbial phrase (without/by/after + -ing)");
+  }
+
+  // 5c. Purpose infinitives: in order to / so as to / so as not to + verb
+  var advPurpose = /\b((?:in order to|so as to|so as not to)\s+[a-z][^,.;]{2,50})/gi;
+  while ((m = advPurpose.exec(text)) !== null) {
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Adverbial of purpose (in order to / so as to)");
+  }
+  // Bare purpose "to + V" after comma or clause end is too noisy — skip unless clearly purpose context
+
+  // 5d. Prepositional adverbials with clear discourse function
+  // despite / in spite of / during / throughout / given / owing to / due to / because of
+  var advPrep = /\b((?:in spite of|despite|during|throughout|owing to|due to|because of|given)\s+[^,.;]{3,60})/gi;
+  while ((m = advPrep.exec(text)) !== null) {
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Adverbial prepositional phrase (despite / during / because of…)");
+  }
+
+  // 5e. Agent / instrument "by + NP" after past participle (outnumbered by…, caused by…)
+  var agentBy = /\b((?:outnumbered|outgunned|followed|surrounded|supported|driven|caused|created|written|made|given|taken|seen|known|used|designed|introduced|conducted|taught|told|influenced|shaped|threatened|protected|replaced|joined|led|encouraged|forced|helped|outnumbered|accompanied)\s+by\s+[^,.;]{3,70})/gi;
+  while ((m = agentBy.exec(text)) !== null) {
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Adverbial agent phrase (V-ed by…)");
+  }
+  var byNp = /\b(by\s+(?:the\s+|a\s+|an\s+|their\s+|its\s+|our\s+|his\s+|her\s+|vast\s+|large\s+|small\s+|many\s+)?[a-z]+(?:\s+[a-z]+){0,6})/gi;
+  while ((m = byNp.exec(text)) !== null) {
+    var beforeBy = text.slice(Math.max(0, m.index - 45), m.index);
+    if (/\b\w+(?:ed|en|wn)\b/i.test(beforeBy) || /\b(?:outnumbered|outgunned|followed|given|made|taken|seen|known|used|driven|caused)\b/i.test(beforeBy)) {
+      add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Adverbial agent phrase (by…)");
+    }
+  }
+
+  // 5f. Result: so + adj/adv + that…
+  var advResult = /\b(so\s+[a-z]+ly?\s+that\s+[^,.;]{3,50})/gi;
+  while ((m = advResult.exec(text)) !== null) {
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Adverbial of result (so … that)");
+  }
+
+  // 6. PARALLEL PATH / prepositional chain (from … via … through … on to …)
+  var pathRe = /\b((?:from|via|through|into|toward|towards|onto|upon)\s+(?:the\s+)?[^,.;]{3,80})/gi;
+  while ((m = pathRe.exec(text)) !== null) {
+    var pEnd = endAtBoundary(m.index, m.index + m[1].length);
+    var pSlice = text.slice(m.index, pEnd);
+    var pStop = pSlice.search(/\s(?:,\s*)?(?:via|through|into|toward|towards|from)\b/i);
+    if (pStop > 0) pEnd = m.index + pStop;
+    add(m.index, pEnd, "highlight-adv", "Prepositional / path phrase (from–via–through–to)");
+  }
+  var onToRe = /\b((?:and\s+)?on\s+to\s+[^,.;]{3,80})/gi;
+  while ((m = onToRe.exec(text)) !== null) {
+    add(m.index, endAtBoundary(m.index, m.index + m[1].length), "highlight-adv", "Prepositional / path phrase (on to…)");
+  }
+
+  
+  // 5g. Purpose infinitive after colon: ": to + verb …"
+  var purposeTo = /:\s*(to\s+[a-z]+(?:\s+[a-z]+){0,12})/gi;
+  while ((m = purposeTo.exec(text)) !== null) {
+    var pStart = text.indexOf(m[1], m.index);
+    if (pStart < 0) continue;
+    var pEnd = endAtBoundary(pStart, pStart + m[1].length);
+    // do not include trailing punctuation only
+    if (pEnd - pStart < 4) continue;
+    add(pStart, pEnd, "highlight-adv", "Adverbial of purpose (to + verb)");
+  }
+
+// ----- Priority (standardised) -----
+  // noun ≥ relative ≥ participle ≥ passive ≥ adverbial
+  var priority = {
+    'highlight-rel': 7,
+    'highlight-noun': 6,
+    'highlight-part': 4,
+    'highlight-pass': 3,
+    'highlight-adv': 2
+  };
+
+  var points = { 0: true };
+  points[text.length] = true;
+  ranges.forEach(function (r) {
+    points[r.start] = true;
+    points[r.end] = true;
+  });
+  var bounds = Object.keys(points).map(Number).sort(function (a, b) { return a - b; });
+
+  var segments = [];
+  for (var bi = 0; bi < bounds.length - 1; bi++) {
+    var a = bounds[bi], b = bounds[bi + 1];
+    if (a >= b) continue;
+    var best = null, bestP = -1;
+    for (var ri = 0; ri < ranges.length; ri++) {
+      var r = ranges[ri];
+      if (r.start <= a && r.end >= b) {
+        var p = priority[r.cls] || 0;
+        if (p > bestP) { bestP = p; best = r; }
+      }
+    }
+    segments.push({ start: a, end: b, cls: best ? best.cls : null, title: best ? best.title : null });
+  }
+
+  var merged = [];
+  for (var si = 0; si < segments.length; si++) {
+    var seg = segments[si];
+    var last = merged[merged.length - 1];
+    if (last && last.cls === seg.cls && last.title === seg.title) last.end = seg.end;
+    else merged.push({ start: seg.start, end: seg.end, cls: seg.cls, title: seg.title });
+  }
+
+  var out = '';
+  for (var k = 0; k < merged.length; k++) {
+    var rr = merged[k];
+    var slice = text.slice(rr.start, rr.end);
+    if (!slice) continue;
+    if (rr.cls && slice.trim()) {
+      out += '<span class="' + rr.cls + '" title="' + rr.title + '">' + escapeHtml(slice) + '</span>';
+    } else {
+      out += escapeHtml(slice);
+    }
+  }
+  return out;
+}
+
+// Keep last analysis so we can save rich data
+let lastAnalysis = null;
+
+async function dissectSentence() {
+  const input = document.getElementById('sentence-input').value;
+  if (!input.trim()) {
+    alert('Please paste a sentence first.');
+    return;
+  }
+
+  const btn = document.getElementById('dissect-btn');
+  const btnText = document.getElementById('dissect-btn-text');
+  const originalText = btnText.textContent;
+  btn.disabled = true;
+  btnText.textContent = 'Analysing…';
+
+  try {
+    let analysis;
+    const settings = getSettings();
+    if (settings.apiKey) {
+      try {
+        analysis = await analyseWithLLM(input.trim(), settings);
+      } catch (e) {
+        console.warn('LLM analysis failed, falling back:', e);
+        alert('LLM analysis failed (' + e.message + '). Using the built-in analyser instead.');
+        analysis = analyseSentence(input);
+      }
+    } else {
+      analysis = analyseSentence(input);
+    }
+
+    if (!analysis) {
+      alert('Could not analyse the sentence.');
+      return;
+    }
+
+    lastAnalysis = analysis;
+
+    document.getElementById('results').classList.remove('hidden');
+    document.getElementById('dissected-sentence').innerHTML = analysis.markedHtml || analysis.original;
+    document.getElementById('chunking-tip').textContent = (analysis.tips && analysis.tips[0]) || '';
+
+    document.getElementById('save-feedback').classList.add('hidden');
+    document.getElementById('save-theme').value = '';
+    document.getElementById('save-note').value = '';
+
+    const tree = document.getElementById('anatomy-tree');
+    tree.innerHTML = '';
+    (analysis.anatomy || []).forEach(node => {
+      const div = document.createElement('div');
+      div.className = `tree-node ${node.color || 'clause-main'} rounded-xl p-4`;
+      div.innerHTML = `
+        <div class="font-semibold text-slate-900 text-sm">${node.label || ''}</div>
+        <div class="text-slate-700 mt-1 text-sm leading-relaxed">${node.content || ''}</div>
+        <div class="text-xs text-slate-600 mt-2 opacity-90">${node.note || ''}</div>
+      `;
+      tree.appendChild(div);
+    });
+
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = originalText;
+  }
+}
+
+function loadExample() {
+  const s = SAMPLES[Math.floor(Math.random() * SAMPLES.length)];
+  document.getElementById('sentence-input').value = s.sentence;
+  // Pre-select theme if available
+  const themeSelect = document.getElementById('save-theme');
+  if (themeSelect && s.theme) themeSelect.value = s.theme;
+  dissectSentence();
+}
+
+function clearAll() {
+  document.getElementById('sentence-input').value = '';
+  document.getElementById('results').classList.add('hidden');
+  lastAnalysis = null;
+}
+
+// ---------- Save / Review ----------
+function saveCurrentSentence() {
+  if (!lastAnalysis) {
+    alert('Please dissect a sentence first.');
+    return;
+  }
+  const theme = document.getElementById('save-theme').value;
+  if (!theme) {
+    alert('Please choose a theme before saving.');
+    document.getElementById('save-theme').focus();
+    return;
+  }
+  const note = (document.getElementById('save-note').value || '').trim();
+
+  const list = getSaved();
+  // Avoid exact duplicates under same theme
+  const exists = list.some(item => item.sentence === lastAnalysis.original && item.theme === theme);
+  if (exists) {
+    const feedback = document.getElementById('save-feedback');
+    feedback.textContent = 'Already saved under this theme.';
+    feedback.classList.remove('hidden');
+    feedback.classList.remove('text-emerald-700');
+    feedback.classList.add('text-amber-700');
+    return;
+  }
+
+  const entry = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    sentence: lastAnalysis.original,
+    markedHtml: lastAnalysis.markedHtml,
+    tip: lastAnalysis.tips[0] || '',
+    anatomy: lastAnalysis.anatomy,
+    theme: theme,
+    note: note,
+    savedAt: new Date().toISOString()
+  };
+
+  list.unshift(entry);
+  setSaved(list);
+
+  const feedback = document.getElementById('save-feedback');
+  feedback.textContent = '✓ Saved! You can review it under “My Sentences”.';
+  feedback.classList.remove('hidden', 'text-amber-700');
+  feedback.classList.add('text-emerald-700');
+
+  // Optional: switch to saved tab after a short delay
+  // setTimeout(() => showTab('saved'), 1200);
+}
+
+function deleteSaved(id) {
+  if (!confirm('Remove this sentence from your collection?')) return;
+  const list = getSaved().filter(item => item.id !== id);
+  setSaved(list);
+  renderSavedList(currentThemeFilter);
+}
+
+function clearAllSaved() {
+  const list = getSaved();
+  if (list.length === 0) return;
+  if (!confirm(`Delete all ${list.length} saved sentence(s)? This cannot be undone.`)) return;
+  setSaved([]);
+  renderSavedList('all');
+}
+
+function exportSaved() {
+  const list = getSaved();
+  if (list.length === 0) {
+    alert('Nothing to export yet.');
+    return;
+  }
+  const lines = list.map((item, i) => {
+    const date = new Date(item.savedAt).toLocaleDateString('en-GB');
+    return `${i + 1}. [${item.theme}] (${date})\n${item.sentence}${item.note ? '\nNote: ' + item.note : ''}\n`;
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `my-sentence-collection-${new Date().toISOString().slice(0, 10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+let currentThemeFilter = 'all';
+
+function renderThemeFilters() {
+  const container = document.getElementById('theme-filters');
+  if (!container) return;
+  const list = getSaved();
+  const counts = {};
+  THEMES.forEach(t => counts[t.id] = 0);
+  list.forEach(item => {
+    if (counts[item.theme] !== undefined) counts[item.theme]++;
+  });
+
+  let html = `
+    <button onclick="setThemeFilter('all')" 
+      class="theme-filter-btn px-3 py-1.5 rounded-full text-sm font-medium border transition ${currentThemeFilter === 'all' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'}">
+      All <span class="opacity-70">(${list.length})</span>
+    </button>`;
+
+  THEMES.forEach(t => {
+    const active = currentThemeFilter === t.id;
+    html += `
+      <button onclick="setThemeFilter('${t.id}')" 
+        class="theme-filter-btn px-3 py-1.5 rounded-full text-sm font-medium border transition ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'}">
+        ${t.label} <span class="opacity-70">(${counts[t.id] || 0})</span>
+      </button>`;
+  });
+  container.innerHTML = html;
+}
+
+function setThemeFilter(themeId) {
+  currentThemeFilter = themeId;
+  renderSavedList(themeId);
+}
+
+function getThemeMeta(themeId) {
+  return THEMES.find(t => t.id === themeId) || { label: themeId, color: 'bg-slate-100 text-slate-700' };
+}
+
+function renderSavedList(filter = 'all') {
+  currentThemeFilter = filter;
+  renderThemeFilters();
+
+  const list = getSaved();
+  const filtered = filter === 'all' ? list : list.filter(item => item.theme === filter);
+
+  const emptyEl = document.getElementById('saved-empty');
+  const listEl = document.getElementById('saved-list');
+
+  if (list.length === 0) {
+    emptyEl.classList.remove('hidden');
+    listEl.innerHTML = '';
+    return;
+  }
+  emptyEl.classList.add('hidden');
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `<div class="text-center text-slate-500 text-sm py-8">No sentences under this theme yet.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(item => {
+    const meta = getThemeMeta(item.theme);
+    const dateStr = new Date(item.savedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return `
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <div class="flex flex-wrap items-center gap-2 mb-3">
+          <span class="text-xs font-medium px-2.5 py-1 rounded-full ${meta.color}">${meta.label}</span>
+          <span class="text-xs text-slate-400">${dateStr}</span>
+          ${item.note ? `<span class="text-xs text-slate-500 italic">· ${escapeHtml(item.note)}</span>` : ''}
+        </div>
+        <div class="text-base leading-relaxed text-slate-800 mb-4">${item.markedHtml || escapeHtml(item.sentence)}</div>
+        <div class="flex flex-wrap gap-2">
+          <button onclick="reDissectSaved('${item.id}')" class="text-sm px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium">
+            <i class="fa-solid fa-microscope mr-1"></i> Dissect again
+          </button>
+          <button onclick="deleteSaved('${item.id}')" class="text-sm px-3 py-1.5 rounded-lg text-slate-500 hover:bg-red-50 hover:text-red-600">
+            <i class="fa-solid fa-trash-can mr-1"></i> Remove
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function reDissectSaved(id) {
+  const item = getSaved().find(x => x.id === id);
+  if (!item) return;
+  showTab('dissector');
+  document.getElementById('sentence-input').value = item.sentence;
+  // Pre-fill theme for convenience
+  const themeSelect = document.getElementById('save-theme');
+  if (themeSelect) themeSelect.value = item.theme;
+  dissectSentence();
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ---------- UI helpers ----------
+function showTab(name) {
+  try {
+    // Hide all panels (class + inline style so it works even if Tailwind fails)
+    document.querySelectorAll('.tab-panel').forEach(function (p) {
+      p.classList.add('hidden');
+      p.style.display = 'none';
+    });
+    // Reset tab button styles
+    document.querySelectorAll('.tab-btn').forEach(function (b) {
+      b.classList.remove('tab-active');
+      b.classList.add('text-slate-600');
+    });
+    // Show target panel
+    var panel = document.getElementById('panel-' + name);
+    if (panel) {
+      panel.classList.remove('hidden');
+      panel.style.display = '';
+    }
+    // Activate target tab button
+    var btn = document.getElementById('tab-' + name);
+    if (btn) {
+      btn.classList.add('tab-active');
+      btn.classList.remove('text-slate-600');
+    }
+    if (name === 'saved') {
+      renderSavedList(currentThemeFilter);
+    }
+  } catch (err) {
+    console.error('showTab error:', err);
+  }
+}
+// Expose on window so inline onclick always finds it
+window.showTab = showTab;
+
+function toggleAccordion(btn) {
+  const content = btn.nextElementSibling;
+  const icon = btn.querySelector('.fa-chevron-down');
+  const isOpen = content.classList.contains('open');
+  document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('open'));
+  document.querySelectorAll('.fa-chevron-down').forEach(i => i.style.transform = '');
+  if (!isOpen) {
+    content.classList.add('open');
+    icon.style.transform = 'rotate(180deg)';
+  }
+}
+
+function buildComplex() {
+  const baseRaw = document.getElementById('base-sentence').value.trim();
+  const relRaw = document.getElementById('add-relative').value.trim();
+  const partRaw = document.getElementById('add-participle').value.trim();
+
+  if (!baseRaw) {
+    alert('Please type a simple base sentence first.');
+    return;
+  }
+
+  function stripEndPunct(s) { return s.replace(/[.?!]+$/, '').trim(); }
+  function lowerFirst(s) { return s ? s.charAt(0).toLowerCase() + s.slice(1) : s; }
+  function upperFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+  function hasRelativeMarker(s) { return /^(who|whom|whose|which|that|where|when)\b/i.test(s); }
+  function isInfinitive(s) { return /^to\s+[a-z]/i.test(s); }
+  function isIngPhrase(s) {
+    return /^(having|faced|according|including|leaving|working|living|looking|using|based|seeking|feeling|knowing|hoping|trying|starting|wanting)\b/i.test(s)
+      || /^[a-z]+ing\b/i.test(s);
+  }
+  function isFiniteClause(s) {
+    return /\b(is|are|was|were|can|can't|cannot|could|will|won't|would|should|must|do|does|did|have|has|had|don't|doesn't|didn't)\b/i.test(s);
+  }
+  function headNounIsPerson(base) {
+    return /\b(people|person|student|students|teenager|teenagers|youngster|youngsters|child|children|parent|parents|teacher|teachers|worker|workers|citizen|citizens|generation|teen|teens|youth|kids|boy|boys|girl|girls)\b/i.test(base);
+  }
+  // First noun chunk of a simple sentence (for inserting relative next to the right noun)
+  function splitSubjectPredicate(base) {
+    // Very light heuristic for S + V + …
+    var m = base.match(/^((?:The|A|An|This|That|These|Those|My|Our|Their)\s+[\w\-']+(?:\s+(?:of\s+[\w\-']+))?|[\w\-']+)\s+((?:should|must|can|could|will|would|need to|needs to|have to|has to|are|is|was|were|do|does|did)?\s*.*)$/i);
+    if (m) return { subject: m[1].trim(), predicate: m[2].trim() };
+    return null;
+  }
+
+  var notes = [];
+  var base = stripEndPunct(baseRaw);
+  var rel = '';
+
+  // ----- Relative clause shaping -----
+  if (relRaw) {
+    var r = stripEndPunct(relRaw);
+    if (hasRelativeMarker(r)) {
+      rel = r;
+      notes.push('Kept your relative marker (<strong>' + r.split(/\s+/)[0].toLowerCase() + '</strong>).');
+    } else if (isInfinitive(r)) {
+      // "to help youngsters develop…" → "which aims to help youngsters develop…"
+      var afterTo = r.replace(/^to\s+/i, '');
+      if (headNounIsPerson(base)) {
+        rel = 'who can ' + afterTo;
+        notes.push('You wrote <em>to + verb</em>. Linked it with <strong>who can</strong> (people as head noun).');
+      } else {
+        rel = 'which aims to ' + afterTo;
+        notes.push('You wrote <em>to + verb</em>. Linked it with <strong>which aims to</strong> (not “that to…”).');
+      }
+    } else if (isIngPhrase(r)) {
+      if (headNounIsPerson(base)) {
+        rel = 'who are ' + lowerFirst(r);
+      } else {
+        rel = 'which involves ' + lowerFirst(r);
+      }
+      notes.push('You wrote an -ing phrase. Expanded it into a clear relative clause.');
+    } else if (isFiniteClause(r)) {
+      if (/^(it|this|that|they|there)\b/i.test(r)) {
+        rel = 'which means that ' + lowerFirst(r);
+        notes.push('Linked your full clause with <strong>which means that</strong>.');
+      } else if (headNounIsPerson(base)) {
+        rel = 'who ' + lowerFirst(r);
+        notes.push('Chose <strong>who</strong> because the head noun refers to people.');
+      } else {
+        rel = 'which ' + lowerFirst(r);
+        notes.push('Chose <strong>which</strong> to turn your idea into a relative clause.');
+      }
+    } else {
+      // noun phrase / fragment / bare verb phrase
+      var startsWithVerb = /^(spend|need|want|work|live|study|feel|face|suffer|struggle|try|use|play|go|come|take|make|get|find|show|lack|have|has|are|is)\b/i.test(r);
+      if (headNounIsPerson(base)) {
+        if (startsWithVerb) {
+          rel = 'who ' + lowerFirst(r);
+          notes.push('Added <strong>who</strong> before your verb phrase (people as head noun).');
+        } else {
+          rel = 'who need ' + lowerFirst(r);
+          notes.push('Added <strong>who need</strong> to connect your idea to a people-head noun.');
+        }
+      } else {
+        if (startsWithVerb) {
+          rel = 'which ' + lowerFirst(r);
+          notes.push('Added <strong>which</strong> before your verb phrase.');
+        } else {
+          rel = 'which provides ' + lowerFirst(r);
+          notes.push('Added <strong>which provides</strong> to turn your fragment into a relative clause.');
+        }
+      }
+    }
+  }
+
+  // ----- Adverbial / participle shaping -----
+  var part = '';
+  if (partRaw) {
+    var p = stripEndPunct(partRaw);
+    if (isIngPhrase(p) || /^(having|faced with|according to|including)\b/i.test(p)) {
+      part = upperFirst(p);
+      if (!/,$/.test(part)) part += ',';
+      notes.push('Used your phrase as an opening participle / adverbial.');
+    } else if (isFiniteClause(p)) {
+      part = 'As ' + lowerFirst(p) + ',';
+      notes.push('You wrote a full clause. Opened with <strong>As…</strong> (reason / background).');
+    } else if (isInfinitive(p)) {
+      part = 'In order ' + lowerFirst(p) + ',';
+      notes.push('Opened with <strong>In order to…</strong> (purpose).');
+    } else {
+      part = 'Given that ' + lowerFirst(p) + ',';
+      notes.push('Wrapped your idea with <strong>Given that…</strong> so it works as a sentence opener.');
+    }
+  }
+
+  // ----- Assemble (put relative next to people-subject when possible) -----
+  var result = base;
+  if (rel) {
+    var parts = splitSubjectPredicate(base);
+    if (parts && headNounIsPerson(base) && /^(who|whom|whose)\b/i.test(rel)) {
+      // Teenagers who … need clearer guidance
+      result = parts.subject + ' ' + rel + ' ' + parts.predicate;
+      notes.push('Placed the relative clause right after the people-noun it describes.');
+    } else {
+      // Default: attach after the whole base (works for "a policy which…")
+      result = base + ' ' + rel;
+    }
+  }
+  result = result.replace(/\s+/g, ' ').trim();
+  if (!/[.?!]$/.test(result)) result += '.';
+
+  if (part) {
+    result = part + ' ' + lowerFirst(result);
+    result = upperFirst(result);
+  }
+
+  // Clean glitches
+  result = result
+    .replace(/\bthat\s+to\b/gi, 'that aims to')
+    .replace(/\bwhich\s+to\b/gi, 'which aims to')
+    .replace(/\swho\s+to\b/gi, 'who can')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([,!.])/g, '$1')
+    .trim();
+
+  var tipHtml = notes.length
+    ? '<ul class="text-xs text-emerald-800 mt-3 space-y-1 list-disc list-inside text-left">' +
+      notes.map(function (n) { return '<li>' + n + '</li>'; }).join('') +
+      '</ul>'
+    : '';
+
+  const box = document.getElementById('upgraded-result');
+  box.classList.remove('hidden');
+  box.style.display = '';
+  box.innerHTML =
+    '<strong>Upgraded version:</strong><br><span class="text-base leading-relaxed">' + escapeHtml(result) + '</span>' +
+    tipHtml +
+    '<p class="text-xs text-emerald-700 mt-3">The lab chose the linking words for you. Read it aloud — if the logic is clear, try using a similar pattern in your own writing.</p>';
+}
+
+function renderSamples() {
+  const grid = document.getElementById('sample-grid');
+  grid.innerHTML = SAMPLES.map(s => `
+    <div class="sample-card bg-white rounded-2xl border border-slate-200 p-5 cursor-pointer transition" onclick="loadSample(${s.id})">
+      <div class="flex items-start justify-between gap-2">
+        <div>
+          <div class="font-semibold text-slate-900">${s.title}</div>
+          <div class="text-xs text-slate-500 mt-0.5">${s.level}</div>
+        </div>
+        <div class="flex flex-wrap gap-1 justify-end">
+          ${s.tags.map(t => `<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-600">${t}</span>`).join('')}
+        </div>
+      </div>
+      <p class="text-sm text-slate-700 mt-3 line-clamp-3 leading-relaxed">${s.sentence}</p>
+      <div class="text-xs text-blue-600 mt-3 font-medium">Click to dissect →</div>
+    </div>
+  `).join('');
+}
+
+function loadSample(id) {
+  const s = SAMPLES.find(x => x.id === id);
+  if (!s) return;
+  showTab('dissector');
+  document.getElementById('sentence-input').value = s.sentence;
+  const themeSelect = document.getElementById('save-theme');
+  if (themeSelect && s.theme) themeSelect.value = s.theme;
+  dissectSentence();
+}
+
+// Expose key functions globally (needed for inline onclick handlers)
+window.dissectSentence = dissectSentence;
+window.loadExample = loadExample;
+window.clearAll = clearAll;
+window.saveCurrentSentence = saveCurrentSentence;
+window.deleteSaved = deleteSaved;
+window.clearAllSaved = clearAllSaved;
+window.exportSaved = exportSaved;
+window.setThemeFilter = setThemeFilter;
+window.reDissectSaved = reDissectSaved;
+window.toggleAccordion = toggleAccordion;
+window.buildComplex = buildComplex;
+window.loadSample = loadSample;
+window.showTab = showTab;
+
+// Init
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    renderSamples();
+    updateSavedBadge();
+    // Ensure only Dissector is visible on load
+    document.querySelectorAll('.tab-panel').forEach(function (p) {
+      if (p.id !== 'panel-dissector') {
+        p.classList.add('hidden');
+        p.style.display = 'none';
+      } else {
+        p.classList.remove('hidden');
+        p.style.display = '';
+      }
+    });
+    var firstBtn = document.querySelector('#learn-accordions button');
+    if (firstBtn) toggleAccordion(firstBtn);
+  } catch (err) {
+    console.error('Init error:', err);
+  }
+});
+
+  </script>
+  <script>
+  // Extra Safari-safe tab wiring (runs after main script)
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.tab-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        var id = btn.getAttribute('id') || '';
+        var name = id.replace('tab-', '');
+        if (name && typeof window.showTab === 'function') {
+          e.preventDefault();
+          window.showTab(name);
+        }
+      });
+    });
+  });
+  </script>
+</body>
+</html>
